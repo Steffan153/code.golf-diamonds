@@ -18,9 +18,15 @@
     </style>
   </head>
   <body>
-    <p>Shows all the diamonds of a user. Bytes and chars diamonds are shown together, and one of them shows up empty if that scoring does not have a diamond. Table is sortable if you click on the headers.</p>
+    <p>
+      Shows all the diamonds of a user. Bytes and chars diamonds are shown
+      together, and one of them shows up empty if that scoring does not have a
+      diamond. Table is sortable if you click on the headers.
+    </p>
     <p>It may take a little while when you press Go.</p>
-    Username: <input type="text" class="login" /> <button>Go</button> <br /><br />
+    Upload <a href="https://code.golf/scores/all-holes/all-langs/all">all.json</a>: <input type="file" id="file" /> <button>Upload</button><br><br>
+    Username: <input type="text" class="login" />
+    <button>Go</button> <br /><br />
     <table class="sortable">
       <thead>
         <tr>
@@ -33,38 +39,45 @@
       <tbody></tbody>
     </table>
     <script>
-      fetch("all.json")
-        .then((x) => x.json())
-        .then((x) => {
-          document.querySelector("button").addEventListener("click", () => {
-            const login = document.querySelector(".login").value.toLowerCase();
-            const s = document.querySelector(".sortable tbody");
-            s.innerHTML = "";
-            const z = {};
-            for (const a of x) {
-              if (a.login.toLowerCase() != login) continue;
-              if (
-                x.some(
-                  (z) =>
-                    z.scoring == a.scoring &&
-                    z.login.toLowerCase() != login &&
-                    z.hole == a.hole &&
-                    z.lang == a.lang &&
-                    z[z.scoring] <= a[a.scoring]
+      document.querySelector("button").addEventListener("click", () => {
+        const reader = new FileReader();
+        reader.onload = (f) => {
+          const x = JSON.parse(f.target.result);
+          document
+            .querySelector("button:last-of-type")
+            .addEventListener("click", () => {
+              const login = document
+                .querySelector(".login")
+                .value.toLowerCase();
+              const s = document.querySelector(".sortable tbody");
+              s.innerHTML = "";
+              const z = {};
+              for (const a of x) {
+                if (a.login.toLowerCase() != login) continue;
+                if (
+                  x.some(
+                    (z) =>
+                      z.scoring == a.scoring &&
+                      z.login.toLowerCase() != login &&
+                      z.hole == a.hole &&
+                      z.lang == a.lang &&
+                      z[z.scoring] <= a[a.scoring]
+                  )
                 )
-              )
-                continue;
-              if (!z[a.hole + "," + a.lang]) z[a.hole + "," + a.lang] = {};
-              z[a.hole + "," + a.lang][a.scoring] = a[a.scoring];
-            }
-            for (const k in z) {
-              const [h, l] = k.split(",");
-              s.innerHTML += `<tr><td>${h}</td><td>${l}</td><td>${
-                z[k].bytes || ""
-              }</td><td>${z[k].chars || ""}</td></tr>`;
-            }
-          });
-        });
+                  continue;
+                if (!z[a.hole + "," + a.lang]) z[a.hole + "," + a.lang] = {};
+                z[a.hole + "," + a.lang][a.scoring] = a[a.scoring];
+              }
+              for (const k in z) {
+                const [h, l] = k.split(",");
+                s.innerHTML += `<tr><td>${h}</td><td>${l}</td><td>${
+                  z[k].bytes || ""
+                }</td><td>${z[k].chars || ""}</td></tr>`;
+              }
+            });
+        };
+        reader.readAsText(document.querySelector("#file").files[0]);
+      });
     </script>
     <script src="https://cdn.jsdelivr.net/gh/tofsjonas/sortable/sortable.js"></script>
   </body>
